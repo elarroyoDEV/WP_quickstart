@@ -1,0 +1,53 @@
+# Files
+# -----
+.DS_Store
+.env*
+.htaccess
+*.log
+.sql
+
+
+# Directories
+# -----------
+ops/.vagrant/
+app/wp/
+unformatted/
+vendor/
+node_modules/
+package-lock.json
+composer.lock
+
+
+# Keep
+# ----
+
+!.gitignore
+app/*
+!app/wp-content
+!app/wp-config.php
+
+!app/wp-content/mu-plugins/
+!app/wp-content/plugins/
+!app/wp-content/themes/
+!app/wp-content/uploads/
+
+app/wp-content/languages/*
+!app/wp-content/languages/.keep
+
+app/wp-content/mu-plugins/*
+!app/wp-content/mu-plugins/.keep
+
+app/wp-content/plugins/*
+!app/wp-content/plugins/.keep
+
+app/wp-content/themes/*
+!app/wp-content/themes/.keep
+
+app/wp-content/uploads/*
+!app/wp-content/uploads/.keep
+
+dump/*
+!dump/.keep
+
+log/*
+!log/.keep

@@ -1,0 +1,80 @@
+#!/bin/bash
+failures_flag=0
+failures_message="The following programs failed to install:\n"
+
+no_brew_or_wget() {
+  message="\nwget and/or brew and/or git are not installed on this system. Without them, "
+  message+="there isn't an easy or reliable way to continue with this "
+  message+="setup script.\n\nVisit https://brew.sh and follow the "
+  message+="installation instructions for your operating system. Then, rerun "
+  message+="this script.\n\nIf brew is already installed, manually install "
+  message+="wget and git, then rerun this script."
+
+  printf "%s", "$message"
+  exit 1
+}
+
+# Check for wget
+echo "Checking for wget..."
+if [ ! -x "$(command -v wget)" ]; then
+  echo "wget is not installed. Checking for brew..."
+
+  if [ ! -x "$(command -v brew)" ]; then
+    no_brew_or_wget
+  else
+    echo "brew is already installed. Installing wget..."
+    brew install wget
+
+    if [ -x "$(command -v wget)" ]; then
+      echo "wget installed successfully."
+    else
+      no_brew_or_wget
+    fi
+  fi
+else
+  echo "wget is already installed."
+fi
+
+# Check for git
+echo "Checking for git..."
+if [ ! -x "$(command -v git)" ]; then
+  echo "git is not installed. Checking for brew..."
+
+  if [ ! -x "$(command -v brew)" ]; then
+    no_brew_or_wget
+  else
+    echo "brew is already installed. Installing git..."
+    brew install git
+
+    if [ -x "$(command -v git)" ]; then
+      echo "git installed successfully."
+    else
+      no_brew_or_wget
+    fi
+  fi
+else
+  echo "git is already installed."
+fi
+
+# Check for Composer
+echo "Checking for Composer..."
+if [ ! -x "$(command -v composer)" ]; then
+  echo "Composer not installed. Installing..."
+
+  # https://getcomposer.org/doc/faqs/how-to-install-composer-programmatically.md
+	expected_signature=$(wget -q -O - https://composer.github.io/installer.sig)
+	php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+	actual_signature=$(php -r "echo hash_file('SHA384', 'composer-setup.php');")
+
+	if [ "$expected_signature" != "$actual_signature" ]
+	then
+		>&2 echo 'ERROR: Invalid installer signature'
+		rm composer-setup.php
+		exit 1
+	fi
+
+	php composer-setup.php --quiet
+	rm composer-setup.php
+else
+  echo "composer is already installed."
+fi

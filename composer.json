@@ -1,0 +1,37 @@
+{
+    "name": "puraindia",
+    "type": "project",
+    "description": "E-Nuc",
+    "authors": [
+      {
+        "name": "Adrián Cobo",
+        "email": "adrian@grafreak.net",
+        "homepage": "https://grafreak.net"
+      }
+    ],
+    "config": {
+      "preferred-install": "dist"
+    },
+    "repositories": [
+      {
+        "type": "composer",
+        "url": "https://wpackagist.org"
+      }
+    ],
+    "require": {
+      "php": "^7.2",
+      "composer/installers": ">=1.0",
+      "vlucas/phpdotenv": "^2.4.0",
+      "wpackagist-plugin/contact-form-7": "^5.0.5",
+      "wpackagist-plugin/woocommerce":"^4.2.1"
+    },
+    "extra": {
+      "installer-paths": {
+        "app/wp-content/mu-plugins/{$name}/": ["type:wordpress-muplugin"],
+        "app/wp-content/plugins/{$name}/": ["type:wordpress-plugin"],
+        "app/wp-content/themes/{$name}/": ["type:wordpress-theme"]
+
+      },
+      "wordpress-install-dir": "app"
+    }
+  }

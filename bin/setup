@@ -19,17 +19,17 @@ fi
 
 lando start
 
-cd app
-FILE=index.php
+FILE=app/index.php
 if [[ -f "$FILE" ]]; then
     echo "El WordPress ya está instalado"
 else
 	echo "LOS CABALLEROS DEL CLI DICEN: Instalando el WordPress via wp-cli"
-	lando wp core download --locale=$LOCALE
+	cd app
+	lando wp core download --locale=$LOCALE --force
+	cd ..
 fi
 
 # Using composer and wp-packagist
-cd ..
 FILE=composer.lock
 if [[ -f "$FILE" ]]; then
 	echo "Updateando plugins y temas con Composer..."
@@ -59,12 +59,12 @@ if [[ -f "$FILE" ]]; then
 	echo "LOS CABALLEROS DEL CLI DICEN: Importando el dump que has puesto en la carpeta ;)"
 	cd app
 	lando wp db import ../dump/dump.sql --path=$WEBROOT
+	lando wp plugin activate --all
 	cd ..
-else
-	if ! $(wp core is-installed); then
+else if [! $(lando wp core is-installed)]; then
 		echo "LOS CABALLEROS DEL CLI DICEN: Instalando el WordPress via wp-cli"
 		lando wp core install --url=$WP_HOME_URL --title="$SITE_NAME" --admin_user=admin --admin_password=password --admin_email=admin@$DOMAIN --path=$WEBROOT
-	fi
+		lando wp plugin activate --all
 fi
 
 # Guardamos la dirección en el hosts para que no redirija desde fuera (Longarela's desire XD )
@@ -84,4 +84,3 @@ Gracias por escuchar el podcast y formar parte de la comunidad.
 EOF
 
 echo "¡FELIZ VIERNOLES! YA TIENES TU WP PARA TRABAJAR. ENTRA EN:" $WP_HOME_URL
-

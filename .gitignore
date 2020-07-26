@@ -7,7 +7,7 @@
 .sql
 package-lock.json
 composer.lock
-
+.lando.yml
 
 # Directories
 # -----------
@@ -24,7 +24,6 @@ node_modules/
 
 !.gitignore
 app/*
-!app/wp-content
 !app/wp-config.php
 
 !app/wp-content/mu-plugins/

@@ -22,3 +22,7 @@
 - Preguntar en caso de que sea un import la URL vieja y forzar el wp search-replace
 
 - ¿¿¿Hacer un merge para que todo esto se ejecute dentro del lando start???
+
+- Que cuando guarda en el fichero del hosts mire si ya existe la linea
+
+- Poner un certificado ssl al vuelo para evitar la pantalla de sitio no seguro

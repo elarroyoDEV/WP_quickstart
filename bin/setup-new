@@ -1,64 +1,45 @@
-sh ./setups/deps
+sh bin/setups/deps
 
-# Check for
-echo "Installing packages with Composer..."
-composer install
+set -a
+source config/.env.sample
 
 lando start
 
 cd app
 lando wp core download --locale=es_ES
 
-# Check for
+# Using composer and wp-packagist
 cd ..
+echo "Installing packages with Composer..."
 composer install
-#parche para reinstalar los plugins que johnpbloch/wordpress habrá borrado
-composer update
 
-cd app
 # Extraer el directorio de WordPress de .lando.yml
-WEBROOT=`grep webroot .lando.yml | cut -d: -f2 | xargs`
+WEBROOT='grep webroot .lando.yml | cut -d: -f2 | xargs'
 
 # Extraer los credenciales de la base de datos
-DBNAME=`lando info --service database --format json | jq -r ".[0].creds.database"`
-DBUSER=`lando info --service database --format json | jq -r ".[0].creds.user"`
-DBPASS=`lando info --service database --format json | jq -r ".[0].creds.password"`
-DBHOST=`lando info --service database --format json | jq -r ".[0].hostnames[0]"`
-
-# Crear fichero de configuración de WordPress
-lando wp config create \
-  --dbname=$DBNAME \
-  --dbuser=$DBUSER \
-  --dbpass=$DBPASS \
-  --dbhost=$DBHOST \
-  --path=$WEBROOT
-  
-# Sacar el nombre del proyecto del fichero .lando.yml
-PROJECT_NAME=`grep name .lando.yml | cut -d: -f2 | xargs`
-SITE_NAME=`echo "$PROJECT_NAME" | sed -e "s/-/ /g" | sed "s/\b[a-z]/\u&/g"`
-
+DB_NAME='lando info --service database --format json | jq -r ".[0].creds.database"'
+DB_USER='lando info --service database --format json | jq -r ".[0].creds.user"'
+DB_PASSWORD='lando info --service database --format json | jq -r ".[0].creds.password"'
+DB_HOST='lando info --service database --format json | jq -r ".[0].hostnames[0]"'
 # Coger una URL para WordPress que no sea localhost y que sí use https
-URL=`lando info --service appserver --format json | jq -r ".[0].urls" | grep -vw localhost | grep https: | cut -d'"' -f2`
-
-# Ver el dominio que ha creado Lando (básicamente la URL sin el protocolo)
-DOMAIN=`echo "$URL" | sed -e "s/^https:\/\///"`
-
-
-
+WP_HOME_URL='lando info --service appserver --format json | jq -r ".[0].urls" | grep -vw localhost | grep https:'
 
 # Instalar WordPress
 lando wp core install
- --url=$URL
+ --url=$WP_HOME_URL
  --title="$SITE_NAME"
  --admin_user=admin
  --admin_password=password
  --admin_email=admin@$DOMAIN
  --path=$WEBROOT
 
-echo
+envsubst < config/.env.example > config/.env
+set +a
 
 if [ $failures_flag -eq 1 ]; then
   printf "%s", "$failures_message"
   exit 1
+else
+  echo "YA TIENES TU WP PARA TRABAJAR. ENTRA EN:" $WP_HOME_URL
 fi
 

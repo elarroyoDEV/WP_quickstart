@@ -1,0 +1,82 @@
+sh bin/setups/deps
+
+FILE=config/.env
+if [[ -f "$FILE" ]]; then
+	echo "Parece que ya ejecutaste la instalación antes... ¿estás seguro que es lo que quieres?"
+	source config/.env
+else
+	echo "Empezando el Quick Start... ¡Crouch, bind, set!"
+	source config/.env.sample
+fi
+
+FILE=.lando.yml
+if [[ -f "$FILE" ]]; then
+    echo "El fichero lando.yml ya existe"
+else
+	echo "Creando el fichero lando"
+	lando init --recipe wordpress --name $SITE_ID --webroot app --yes --source cwd
+fi
+
+lando start
+
+cd app
+FILE=index.php
+if [[ -f "$FILE" ]]; then
+    echo "El WordPress ya está instalado"
+else
+	lando wp core download --locale=$LOCALE
+fi
+
+# Using composer and wp-packagist
+cd ..
+FILE=composer.lock
+if [[ -f "$FILE" ]]; then
+	echo "Updateando plugins y temas con Composer..."
+	composer update
+else
+	echo "Instalando plugins y temas con Composer..."
+	composer install
+fi
+
+WEBROOT=app
+
+set -a
+# Extraer los credenciales de la base de datos
+DB_NAME=`lando info --service database --format json | jq -r ".[0].creds.database"`
+DB_USER=`lando info --service database --format json | jq -r ".[0].creds.user"`
+DB_PASSWORD=`lando info --service database --format json | jq -r ".[0].creds.password"`
+DB_HOST=`lando info --service database --format json | jq -r ".[0].hostnames[0]"`
+# Coger una URL para WordPress que no sea localhost y que sí use https
+WP_HOME_URL=`lando info --service appserver --format json | jq -r ".[0].urls" | grep -vw localhost | grep https: | cut -d'"' -f2`
+DOMAIN=`echo "$WP_HOME_URL" | sed -e "s/^https:\/\///;s/\///"`
+envsubst < config/.env.sample > config/.env
+set +a
+
+# Instalar WordPress o cargar dump.sql
+FILE=dump/dump.sql
+if [[ -f "$FILE" ]]; then
+	echo "LOS CABALLEROS DEL CLI DICEN: Instalando el WordPress via wp-cli"
+	lando wp core install --url=$WP_HOME_URL --title="$SITE_NAME" --admin_user=admin --admin_password=password --admin_email=admin@$DOMAIN --path=$WEBROOT
+else
+	echo "Importando el dump que has puesto en la carpeta ;)"
+	lando wp dbimport dump/dump.sql
+fi
+
+# Guardamos la dirección en el hosts para que no redirija desde fuera (Longarela's desire XD )
+echo "Vamos a guardar la dirección en el hosts para evitar salir fuera"
+sudo -- sh -c "echo 127.0.0.1 "$WP_HOME_URL" >> /etc/hosts"
+
+cat << "EOF"
+      _                                      _
+     | |                                    | |
+  ___| | __ _ _ __ _ __ ___  _   _  ___   __| | _____   __
+ / _ \ |/ _` | '__| '__/ _ \| | | |/ _ \ / _` |/ _ \ \ / /
+|  __/ | (_| | |  | | | (_) | |_| | (_) | (_| |  __/\ V /
+ \___|_|\__,_|_|  |_|  \___/ \__, |\___(_)__,_|\___| \_/
+                              __/ |
+                             |___/
+Gracias por escuchar el podcast y formar parte de la comunidad.
+EOF
+
+echo "¡FELIZ VIERNOLES! YA TIENES TU WP PARA TRABAJAR. ENTRA EN:" $WP_HOME_URL
+

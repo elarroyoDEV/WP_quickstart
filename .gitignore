@@ -1,10 +1,12 @@
 # Files
 # -----
 .DS_Store
-.env*
+.env
 .htaccess
 *.log
 .sql
+package-lock.json
+composer.lock
 
 
 # Directories
@@ -14,8 +16,7 @@ app/wp/
 unformatted/
 vendor/
 node_modules/
-package-lock.json
-composer.lock
+
 
 
 # Keep

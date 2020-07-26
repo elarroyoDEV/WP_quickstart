@@ -17,5 +17,5 @@ services:
 events:
   pre-stop:
     - echo "Database backup..."
-    - wp db export dump.sql --path=../dump/
+    - wp db export dump.sql --path=/dump/
     - echo "Database successfully backed up"

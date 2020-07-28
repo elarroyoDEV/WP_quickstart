@@ -2,7 +2,7 @@ sh bin/setups/deps
 
 FILE=config/.env
 if [[ -f "$FILE" ]]; then
-	echo "Parece que ya ejecutaste la instalación antes... ¿estás seguro que es lo que quieres?"
+	echo "Parece que ya ejecutaste la instalación antes... si tienes un fichero dump.sql vamos a machacarte la base de datos ¿estás seguro que es lo que quieres?"
 	source config/.env
 else
 	echo "Empezando el Quick Start... ¡Crouch, bind, set!"
@@ -61,10 +61,13 @@ if [[ -f "$FILE" ]]; then
 	lando wp db import ../dump/dump.sql --path=$WEBROOT
 	lando wp plugin activate --all
 	cd ..
-else if [! $(lando wp core is-installed)]; then
+else
+	cd app
+	if ! $(lando wp core is-installed); then
 		echo "LOS CABALLEROS DEL CLI DICEN: Instalando el WordPress via wp-cli"
 		lando wp core install --url=$WP_HOME_URL --title="$SITE_NAME" --admin_user=admin --admin_password=password --admin_email=admin@$DOMAIN --path=$WEBROOT
 		lando wp plugin activate --all
+	fi
 fi
 
 # Guardamos la dirección en el hosts para que no redirija desde fuera (Longarela's desire XD )
